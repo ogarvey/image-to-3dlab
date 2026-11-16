@@ -41,6 +41,12 @@ def test_a_failed_export_stops_with_a_message_not_a_powershell_trace():
     assert after.index("if ($LASTEXITCODE -ne 0) { Pop-Location; Die ") < after.index("$TorchPin = ")
 
 
+def test_a_failed_package_install_stops_instead_of_claiming_done():
+    ps1 = PS1.read_text(encoding="utf-8")
+    after = ps1[ps1.index("-r $Reqs"):]
+    assert after.index("if ($LASTEXITCODE -ne 0) { Die ") < after.index("Send-Event \"finished\"")
+
+
 def test_cuda_pytorch_is_installed_at_the_locks_versions():
     """Otherwise PyTorch's index hands over its newest torch, and the lock then swaps it
     for PyPI's CPU-only wheel of the pinned version."""

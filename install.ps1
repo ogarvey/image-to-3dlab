@@ -213,6 +213,7 @@ if ($HasGpu) {
     }
 }
 & uv pip install --quiet --python $Py -r $Reqs
+if ($LASTEXITCODE -ne 0) { Die "Package installation failed. Please report this with the lines above." }
 
 # 5. Blender: Finish needs it, and it is the user's to install. Same finder Finish uses.
 if (Test-Path $Py) {

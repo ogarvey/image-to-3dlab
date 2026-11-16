@@ -542,6 +542,26 @@ def test_the_filtered_lock_keeps_the_rest_and_drops_only_the_cuda_wheels():
     assert "torch==2.14.1" not in kept
 
 
+def test_the_filtered_lock_drops_multiline_hash_continuations():
+    exported = (
+        "#    uv export --frozen --no-dev\n"
+        "numpy==1.26.4 \\\n"
+        "    --hash=sha256:aaaa\n"
+        "torch==2.15.0 \\\n"
+        "    --hash=sha256:bbbb \\\n"
+        "    --hash=sha256:cccc\n"
+        "    # via torchvision\n"
+        "pillow==10.4.0 \\\n"
+        "    --hash=sha256:dddd\n"
+    )
+    out = host.without_cuda(exported)
+    assert "--hash=sha256:bbbb" not in out
+    assert "--hash=sha256:cccc" not in out
+    assert "torch==2.15.0" not in out
+    assert "numpy==1.26.4 \\\n    --hash=sha256:aaaa" in out
+    assert "pillow==10.4.0 \\\n    --hash=sha256:dddd" in out
+
+
 def test_a_lock_with_nothing_to_strip_comes_back_as_it_was():
     plain = "numpy==1.26.4\npillow==10.4.0\n"
     assert host.without_cuda(plain) == plain

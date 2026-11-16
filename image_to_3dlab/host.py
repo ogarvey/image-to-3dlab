@@ -580,7 +580,16 @@ def without_cuda(text: str) -> str:
     (`torch-rocm-index`). Every other pin is kept, because it was resolved against the same
     Python and was not the problem.
     """
-    kept = [line for line in text.splitlines() if not is_cuda_package(line)]
+    kept: list[str] = []
+    dropping = False
+    for line in text.splitlines():
+        if dropping:
+            dropping = line.rstrip().endswith("\\")
+            continue
+        if is_cuda_package(line):
+            dropping = line.rstrip().endswith("\\")
+            continue
+        kept.append(line)
     return "\n".join(kept) + ("\n" if kept else "")
 
 
